@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Black Friday Giveaway</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            background-color: #0a0a0a;
+            background-image: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        h1 {
+            text-transform: uppercase;
+            line-height: 1.1;
+            margin: 10px 0;
+            z-index: 2;
+            padding: 0 10px;
+        }
+
+        .huge-text {
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            color: #FFD700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+            display: block;
+        }
+
+        .design-black {
+            color: #111;
+            text-shadow: none;
+            filter: drop-shadow(0 1px 0 rgba(255,255,255,0.08));
+        }
+
+        .tiny-text {
+            font-size: 9px;
+            color: #222;
+            vertical-align: super;
+        }
+
+        #wheel-container {
+            position: relative;
+            width: 90vw;
+            height: 90vw;
+            max-width: 55vh;
+            max-height: 55vh;
+            margin: 10px auto;
+            z-index: 5;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(255, 0, 50, 0.5), 0 0 10px #FFD700;
+            border: 4px solid #FFD700;
+        }
+
+        #arrow {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #ff0033;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+            z-index: 10;
+        }
+
+        button.spin-btn {
+            padding: 15px 40px;
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 900;
+            background: linear-gradient(180deg, #ff0033 0%, #99001f 100%);
+            color: white;
+            border: 2px solid #FFD700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 0, 51, 0.4);
+            text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif;
+            margin-top: 10px;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        button.spin-btn:active { transform: scale(0.95); }
+        button.spin-btn:disabled { background: #444; border-color: #666; cursor: default; }
+
+        /* --- ЛІВА ЗОНА (ГІФКИ) --- */
+        #left-party-zone {
+            position: fixed;
+            left: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .party-gif {
+            width: 220px;
+            height: auto;
+            border-radius: 10px;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+
+        /* --- ПРАВА ЗОНА (КНОПКА) --- */
+        #music-btn {
+            position: fixed;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 80px;
+            background: #0a0a0a;
+            border: 4px solid #FFD700;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 20;
+            font-size: 35px;
+            color: #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+        #music-btn:hover {
+            transform: translateY(-50%) scale(1.1) rotate(10deg);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            background: #1a1a1a;
+        }
+
+        /* Адаптація для мобільних */
+        @media (max-width: 900px) {
+            #left-party-zone {
+                position: fixed;
+                left: 10px;
+                bottom: 10px;
+                top: auto;
+                transform: none;
+                flex-direction: row;
+            }
+            .party-gif {
+                width: 80px;
+            }
+            #music-btn {
+                position: fixed;
+                right: 10px;
+                bottom: 10px;
+                top: auto;
+                transform: none;
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+            #music-btn:hover {
+                 transform: scale(1.1);
+            }
+        }
+
+        /* --- ПОПАП --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: #111;
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 85%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            color: #ff0033;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .modal-prize {
+            font-size: 1.1rem;
+            color: #fff;
+            margin: 20px 0;
+            line-height: 1.5;
+            font-weight: 500;
+            text-align: left;
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #FFD700;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            background: #FFD700;
+            color: #000;
+            font-weight: 900;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        .action-btn:hover { background: #e6c200; transform: scale(1.05); transition: 0.2s; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop autoplay>
+        <source src="https://www.myinstants.com/media/sounds/rick-roll.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="spinSound" loop>
+        <source src="https://www.myinstants.com/media/sounds/wheel-of-fortune-sound-effect.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound">
+        <source src="https://www.myinstants.com/media/sounds/tada-fanfare-sound-effect.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="left-party-zone">
+        <img class="party-gif" src="https://media.giphy.com/media/GeimqsH0TLDt4tScGw/giphy.gif" alt="Vibing Cat">
+        <img class="party-gif" src="https://media.giphy.com/media/13CoXDiaCcCoyk/giphy.gif" alt="Dancing Dog">
+    </div>
+
+    <button id="music-btn" onclick="toggleMusic()">🔊</button>
+
+    <h1>
+        <span class="tiny-text">майже</span>
+        <span class="huge-text">БЕЗПРОГРАШНИЙ<br><span class="design-black">BLACK</span> FRIDAY</span>
+    </h1>
+
+    <div id="wheel-container">
+        <div id="arrow"></div>
+        <canvas id="wheel" width="1000" height="1000"></canvas>
+    </div>
+
+    <button id="spinBtn" class="spin-btn">ВИПРОБУВАТИ УДАЧУ</button>
+
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="modal-title">ВІТАЄМО! 😂</h2>
+            <div style="color: #FFD700; font-size: 0.9rem; text-transform: uppercase;">Ваш приз - анекдот:</div>
+            <div id="popup-text" class="modal-prize"></div>
+            <button class="action-btn" onclick="goToBank()">ЗІГРАТИ ЩЕ РАЗ</button>
+            </div>
+    </div>
+
+    <script>
+        // --- ПРИЗИ ---
+        const prizes = [
+            "🏝 Поїздка в Житомир",
+            "🎮 PlayStation 5",
+            "📱 iPhone 17 Pro",
+            "🐶 Вечеря з Пензликом",
+            "🍺 Вихідний",
+            "🤡 Анекдот"
+        ];
+
+        const riggedIndex = 5;
+
+        // --- БАЗА АНЕКДОТІВ (ОНОВЛЕНА БАЗА) ---
+        const anecdotes = [
+            "Що спільного між російським кораблем і російською економікою?\n— Обидва пішли на дно.",
+            "Найкоротший анекдот: 'рускій мір'.",
+            "— Куме, а чому росіяни крадуть унітази?\n— Бо вони думають, що це портал у цивілізацію!",
+            "Заходить тестувальник у бар. Замовляє: кухоль пива, 2 кухлі пива, 0 кухлів пива, 999999999 кухлів пива...",
+            "— Куме, а що то у вас за синець під оком?\n— Та то я хотів сфотографувати, як дружина корову доїть.\n— І що?\n— Та, виявилося, що то не корова, а теща город сапає...",
+            "Новини: В Україні розробили новий дрон 'Теща'. Він не літає і не вибухає, але так пиляє мозок ворогу, що той здається в полон.",
+            "Сидить програміст, працює. Підходить син:\n— Тату, а чому сонце сходить на сході, а заходить на заході?\n— Працює? От і не чіпай!",
+            "Одеса. Привоз.\n— Жіночко, а чому ваші гуси такі дорогі?\n— Бо то не гуси, то лебеді, просто вони хворіють і схудли.",
+            "Чорна п'ятниця в Україні: Знижки до -90%! (На товар, ціну якого вчора підняли на 100%).",
+			"Сидять два куми, випивають. Один питає:\n— Куме, а ви знаєте, яка різниця між бідою і катастрофою?\n— Ні.\n— Ну дивіться. Йде коза по мостику, впала і здохла. Це біда, але не катастрофа.\n— А катастрофа?\n— А катастрофа — це коли летить літак з москалями, падає і розбивається. Це катастрофа, але не біда.",
+			"— Галю, ти спиш?\n— Ні.\n— То дай 100 гривень.\n— Я сплю!",
+			"— Куме, а чого це у вас свиня на милицях бігає?\n— Та ви що, куме! Щоб я заради миски холодцю цілу свиню колов?",
+			"— Лікарю, мене всі ігнорують...\n— Наступний!",
+			"Приходить чоловік до психолога:\n— Лікарю, мені щоночі сниться, що я штовхаю поїзд до Києва.\n— Ну, це від перевтоми. Я вам пропишу таблетки.\nПриходить інший чоловік:\n— Лікарю, мені сниться, що я щоночі займаюся сексом з Шерон Стоун!\n— Ого! А можна мені такі сни?\nПерший чоловік (встряє):\n— Лікарю! А можна мені до нього у сон? А то я поки той поїзд до Києва допхаю, то Шерон Стоун вже спить!",
+			"— Мамо, а чому наречена на весіллі вся в білому?\n— Ну, доцю, це найсвітліший день у її житті.\n— А чому тоді наречений у всьому чорному?",
+			"Оголошення в газеті: 'Продам собаку. Добра, лагідна, їсть усе. Дуже любить дітей'.",
+			"— Куме, ви знаєте, як зацікавити ідіота?\n— Ні, як?\n— Завтра розкажу.",
+			"Питають дружину:\n— Де ти береш гроші?\nВона каже: — У тумбочці.\n— А хто кладе в тумбочку гроші?\n— Не знаю.\n— Так де ж ти береш гроші?\n— Та кажу ж: у тумбочці!",
+			"Летять у літаку пасажири, і один — з України. Дістав бутерброд із салом і часником — запах пішов на весь салон.\nПідходить до нього афроамериканець, дивиться, як той їсть, аж слина тече. Питає:\n— Ну що, смачно?\n— Смачно. Їсти будеш?\n— Буду!\n— Я розумію, що ти б з'їв... Але я тобі не дам.",
+			"— Галю, ти спиш?\n— Ні.\n— То дай 100 гривень.\n— Я сплю!",
+            "— Куме, а чому росіяни крадуть унітази?\n— Бо вони думають, що це портал у цивілізацію!",
+            "— Алло, це СБУ?\n— Так.\n— Мій сусід їсть млинці з лопати!\n— Виїжджаємо."
+        ];
+
+        function goToBank() {
+            window.location.href = "https://send.monobank.ua/jar/32bFsomHrE";
+        }
+
+        // --- ЛОГІКА МУЗИКИ ---
+        const bgMusic = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('music-btn');
+        bgMusic.volume = 0.2;
+
+        // Спроба автозапуску. Якщо браузер блокує, то чекаємо на перший клік.
+        bgMusic.play().then(() => {
+            musicBtn.innerText = "🔊";
+        }).catch(() => {
+            musicBtn.innerText = "🔇";
+            document.addEventListener('click', () => {
+                if(bgMusic.paused) {
+                    bgMusic.play();
+                    musicBtn.innerText = "🔊";
+                }
+            }, { once: true });
+        });
+
+        function toggleMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                musicBtn.innerText = "🔊";
+            } else {
+                bgMusic.pause();
+                musicBtn.innerText = "🔇";
+            }
+        }
+
+        // --- ЛОГІКА ЗВУКІВ ---
+        const spinSound = document.getElementById('spinSound');
+        const winSound = document.getElementById('winSound');
+        spinSound.volume = 0.5;
+        winSound.volume = 0.6;
+
+        // ---------------------
+
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const modal = document.getElementById('modal');
+        const popupText = document.getElementById('popup-text');
+
+        const centerX = 500;
+        const centerY = 500;
+        const radius = 480;
+
+        let startAngle = 0;
+        const arc = Math.PI / (prizes.length / 2);
+        let spinTime = 0;
+        let spinTimeTotal = 0;
+
+        const colors = ["#111", "#D4AF37", "#1C1C1C", "#B8860B", "#222", "#FFD700"];
+
+        function drawRouletteWheel() {
+            ctx.clearRect(0,0,1000,1000);
+            ctx.lineWidth = 6;
+
+            for(let i = 0; i < prizes.length; i++) {
+                const angle = startAngle + i * arc;
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + arc, false);
+                ctx.lineTo(centerX, centerY);
+                ctx.fill();
+                ctx.strokeStyle = "#FFD700";
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + arc / 2);
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+
+                const text = prizes[i];
+                const isGold = ctx.fillStyle === "#D4AF37" || ctx.fillStyle === "#FFD700" || ctx.fillStyle === "#B8860B";
+                ctx.fillStyle = isGold ? "#000" : "#fff";
+
+                let fontSize = 45;
+                ctx.font = 'bold ' + fontSize + 'px Montserrat, Arial';
+
+                while (ctx.measureText(text).width > 380 && fontSize > 20) {
+                    fontSize -= 2;
+                    ctx.font = 'bold ' + fontSize + 'px Montserrat, Arial';
+                }
+
+                ctx.fillText(text, radius - 30, 0);
+                ctx.restore();
+            }
+        }
+
+        function spin() {
+            spinBtn.disabled = true;
+            spinSound.currentTime = 0;
+            spinSound.play();
+
+            const sliceAngle = 360 / prizes.length;
+            const targetAngle = 360 * 8 + (270 - (riggedIndex * sliceAngle) - (sliceAngle/2));
+            const randomOffset = Math.floor(Math.random() * (sliceAngle * 0.4)) - (sliceAngle * 0.2);
+            spinTime = 0;
+            spinTimeTotal = 6000;
+            rotateWheel(targetAngle + randomOffset);
+        }
+
+        function rotateWheel(targetTotalDegrees) {
+            const easeOut = (t, b, c, d) => {
+                const ts = (t /= d) * t;
+                const tc = ts * t;
+                return b + c * (tc + -3 * ts + 3 * t);
+            };
+
+            const animate = (timestamp) => {
+                if (!spinTime) spinTime = timestamp;
+                const progress = timestamp - spinTime;
+
+                if (progress < spinTimeTotal) {
+                    const currentAngle = easeOut(progress, 0, targetTotalDegrees, spinTimeTotal);
+                    startAngle = (currentAngle * Math.PI / 180);
+                    drawRouletteWheel();
+                    requestAnimationFrame(animate);
+                } else {
+                    startAngle = (targetTotalDegrees * Math.PI / 180);
+                    drawRouletteWheel();
+                    spinSound.pause();
+                    spinSound.currentTime = 0;
+                    showPopup();
+                }
+            };
+            requestAnimationFrame(animate);
+        }
+
+        function showPopup() {
+            winSound.play();
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+            const randomAnecdote = anecdotes[Math.floor(Math.random() * anecdotes.length)];
+            popupText.innerHTML = randomAnecdote.replace(/\n/g, "<br>");
+            modal.style.display = 'flex';
+
+            // --- ЗАПУСК КОНФЕТІ ---
+            // Запускаємо феєрверк конфеті з різних боків
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 2000 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+
+              var particleCount = 50 * (timeLeft / duration);
+              // Конфеті падають з двох точок зверху
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        document.fonts.ready.then(function () {
+           drawRouletteWheel();
+        });
+        spinBtn.addEventListener('click', spin);
+    </script>
+</body>
+</html>
