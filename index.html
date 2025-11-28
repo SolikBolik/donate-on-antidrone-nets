@@ -17,17 +17,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            /* height: 100vh;  Прибираємо фіксовану висоту для кращої адаптації */
+            min-height: 100vh; /* Мінімальна висота на весь екран */
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden; /* Тільки горизонтальний скрол ховаємо */
             position: relative;
+            padding-bottom: 20px; /* Відступ знизу */
         }
 
         h1 {
             text-transform: uppercase;
             line-height: 1.1;
-            margin: 10px 0;
+            margin: 10px 0 20px 0;
             z-index: 2;
             padding: 0 10px;
         }
@@ -55,9 +56,9 @@
             position: relative;
             width: 90vw;
             height: 90vw;
-            max-width: 55vh;
-            max-height: 55vh;
-            margin: 10px auto;
+            max-width: 50vh; /* Трохи зменшив для кращого вигляду на моб */
+            max-height: 50vh;
+            margin: 0 auto 20px auto;
             z-index: 5;
         }
 
@@ -95,15 +96,15 @@
             box-shadow: 0 5px 20px rgba(255, 0, 51, 0.4);
             text-transform: uppercase;
             font-family: 'Montserrat', sans-serif;
-            margin-top: 10px;
+            margin-bottom: 20px;
             transition: all 0.2s;
             z-index: 10;
         }
         button.spin-btn:active { transform: scale(0.95); }
         button.spin-btn:disabled { background: #444; border-color: #666; cursor: default; }
 
-        /* --- ЛІВА ЗОНА (ГІФКИ) --- */
-        #left-party-zone {
+        /* --- ЗОНА ГІФОК (ПК: зліва фіксовано, Моб: зверху в потоці) --- */
+        #party-zone {
             position: fixed;
             left: 5%;
             top: 50%;
@@ -117,26 +118,25 @@
         }
 
         .party-gif {
-            width: 220px;
+            width: 200px;
             height: auto;
             border-radius: 10px;
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
         }
 
-        /* --- ПРАВА ЗОНА (КНОПКА) --- */
+        /* --- КНОПКА МУЗИКИ --- */
         #music-btn {
             position: fixed;
             right: 5%;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 80px;
-            height: 80px;
+            bottom: 5%;
+            width: 70px;
+            height: 70px;
             background: #0a0a0a;
             border: 4px solid #FFD700;
             border-radius: 50%;
             cursor: pointer;
             z-index: 20;
-            font-size: 35px;
+            font-size: 30px;
             color: #FFD700;
             display: flex;
             align-items: center;
@@ -145,37 +145,42 @@
             transition: all 0.3s ease;
         }
         #music-btn:hover {
-            transform: translateY(-50%) scale(1.1) rotate(10deg);
+            transform: scale(1.1) rotate(10deg);
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
             background: #1a1a1a;
         }
 
-        /* Адаптація для мобільних */
+        /* --- АДАПТАЦІЯ ДЛЯ МОБІЛЬНИХ --- */
         @media (max-width: 900px) {
-            #left-party-zone {
-                position: fixed;
-                left: 10px;
-                bottom: 10px;
+            body {
+                justify-content: flex-start; /* Вирівнювання по верху */
+                padding-top: 20px;
+            }
+            /* Переносимо гіфки наверх */
+            #party-zone {
+                position: relative; /* Стають частиною потоку */
+                left: auto;
                 top: auto;
                 transform: none;
-                flex-direction: row;
+                flex-direction: row; /* В рядок */
+                justify-content: center;
+                margin-bottom: 10px;
+                order: -1; /* Ставимо їх візуально першими */
             }
             .party-gif {
-                width: 80px;
+                width: 85px; /* Зменшуємо розмір */
             }
+            /* Коригуємо кнопку музики */
             #music-btn {
-                position: fixed;
-                right: 10px;
-                bottom: 10px;
-                top: auto;
-                transform: none;
                 width: 50px;
                 height: 50px;
                 font-size: 24px;
+                right: 15px;
+                bottom: 15px;
+                border-width: 3px;
             }
-            #music-btn:hover {
-                 transform: scale(1.1);
-            }
+             /* Трохи зменшуємо відступи заголовка */
+            h1 { margin: 10px 0; }
         }
 
         /* --- ПОПАП --- */
@@ -263,12 +268,10 @@
         <source src="https://www.myinstants.com/media/sounds/tada-fanfare-sound-effect.mp3" type="audio/mpeg">
     </audio>
 
-    <div id="left-party-zone">
+    <div id="party-zone">
         <img class="party-gif" src="https://media.giphy.com/media/GeimqsH0TLDt4tScGw/giphy.gif" alt="Vibing Cat">
         <img class="party-gif" src="https://media.giphy.com/media/13CoXDiaCcCoyk/giphy.gif" alt="Dancing Dog">
     </div>
-
-    <button id="music-btn" onclick="toggleMusic()">🔊</button>
 
     <h1>
         <span class="tiny-text">майже</span>
@@ -282,13 +285,15 @@
 
     <button id="spinBtn" class="spin-btn">ВИПРОБУВАТИ УДАЧУ</button>
 
+    <button id="music-btn" onclick="toggleMusic()">🔊</button>
+
     <div id="modal" class="modal-overlay">
         <div class="modal-content">
             <h2 class="modal-title">ВІТАЄМО! 😂</h2>
             <div style="color: #FFD700; font-size: 0.9rem; text-transform: uppercase;">Ваш приз - анекдот:</div>
             <div id="popup-text" class="modal-prize"></div>
             <button class="action-btn" onclick="goToBank()">ЗІГРАТИ ЩЕ РАЗ</button>
-            </div>
+        </div>
     </div>
 
     <script>
@@ -324,32 +329,30 @@
 			"Оголошення в газеті: 'Продам собаку. Добра, лагідна, їсть усе. Дуже любить дітей'.",
 			"— Куме, ви знаєте, як зацікавити ідіота?\n— Ні, як?\n— Завтра розкажу.",
 			"Питають дружину:\n— Де ти береш гроші?\nВона каже: — У тумбочці.\n— А хто кладе в тумбочку гроші?\n— Не знаю.\n— Так де ж ти береш гроші?\n— Та кажу ж: у тумбочці!",
-			"Летять у літаку пасажири, і один — з України. Дістав бутерброд із салом і часником — запах пішов на весь салон.\nПідходить до нього афроамериканець, дивиться, як той їсть, аж слина тече. Питає:\n— Ну що, смачно?\n— Смачно. Їсти будеш?\n— Буду!\n— Я розумію, що ти б з'їв... Але я тобі не дам.",
-			"— Галю, ти спиш?\n— Ні.\n— То дай 100 гривень.\n— Я сплю!",
-            "— Куме, а чому росіяни крадуть унітази?\n— Бо вони думають, що це портал у цивілізацію!",
-            "— Алло, це СБУ?\n— Так.\n— Мій сусід їсть млинці з лопати!\n— Виїжджаємо."
+			"Летять у літаку пасажири, і один — з України. Дістав бутерброд із салом і часником — запах пішов на весь салон.\nПідходить до нього афроамериканець, дивиться, як той їсть, аж слина тече. Питає:\n— Ну що, смачно?\n— Смачно. Їсти будеш?\n— Буду!\n— Я розумію, що ти б з'їв... Але я тобі не дам."
         ];
 
         function goToBank() {
             window.location.href = "https://send.monobank.ua/jar/32bFsomHrE";
         }
 
-        // --- ЛОГІКА МУЗИКИ ---
+        // --- ЛОГІКА МУЗИКИ (Найагресивніший автозапуск) ---
         const bgMusic = document.getElementById('bgMusic');
         const musicBtn = document.getElementById('music-btn');
         bgMusic.volume = 0.2;
 
-        // Спроба автозапуску. Якщо браузер блокує, то чекаємо на перший клік.
+        // 1. Пробуємо запустити одразу
         bgMusic.play().then(() => {
             musicBtn.innerText = "🔊";
         }).catch(() => {
+            // 2. Якщо заблоковано — чекаємо першого кліку по сторінці
             musicBtn.innerText = "🔇";
             document.addEventListener('click', () => {
                 if(bgMusic.paused) {
                     bgMusic.play();
                     musicBtn.innerText = "🔊";
                 }
-            }, { once: true });
+            }, { once: true }); // once: true означає, що слухач спрацює лише один раз
         });
 
         function toggleMusic() {
@@ -473,8 +476,7 @@
             popupText.innerHTML = randomAnecdote.replace(/\n/g, "<br>");
             modal.style.display = 'flex';
 
-            // --- ЗАПУСК КОНФЕТІ ---
-            // Запускаємо феєрверк конфеті з різних боків
+            // --- КОНФЕТІ ---
             var duration = 3 * 1000;
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 2000 };
@@ -485,13 +487,10 @@
 
             var interval = setInterval(function() {
               var timeLeft = animationEnd - Date.now();
-
               if (timeLeft <= 0) {
                 return clearInterval(interval);
               }
-
               var particleCount = 50 * (timeLeft / duration);
-              // Конфеті падають з двох точок зверху
               confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
               confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
             }, 250);
